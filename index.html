@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智慧种植监控系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            dark: '#1D2129',
+            light: '#F2F3F5'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-inter text-dark">
+  <!-- 顶部导航栏 -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-leaf text-primary text-2xl"></i>
+        <h1 class="text-xl font-bold text-dark">智慧种植监控系统</h1>
+      </div>
+      <div class="flex items-center space-x-6">
+        <div class="flex items-center">
+          <span class="status-dot bg-success"></span>
+          <span class="text-sm font-medium">设备在线</span>
+        </div>
+        <div class="hidden md:flex items-center space-x-4">
+          <a href="#" class="text-gray-600 hover:text-primary transition-colors">
+            <i class="fa fa-dashboard mr-1"></i> 仪表盘
+          </a>
+          <a href="#" class="text-gray-600 hover:text-primary transition-colors">
+            <i class="fa fa-history mr-1"></i> 历史数据
+          </a>
+          <a href="#" class="text-gray-600 hover:text-primary transition-colors">
+            <i class="fa fa-cog mr-1"></i> 设置
+          </a>
+        </div>
+        <button class="md:hidden text-gray-600">
+          <i class="fa fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="container mx-auto px-4 py-6">
+    <!-- 数据概览卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl p-6 card-shadow transform hover:scale-[1.02] transition-transform">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-600">温度</h3>
+          <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-success">正常</span>
+        </div>
+        <div class="flex items-end justify-between">
+          <div>
+            <p id="temperature" class="text-3xl font-bold">25.5</p>
+            <p class="text-sm text-gray-500">°C</p>
+          </div>
+          <div class="w-24 h-2">
+            <div class="h-full bg-gray-200 rounded-full overflow-hidden">
+              <div class="h-full bg-success" style="width: 60%"></div>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-3">正常范围: 18-30°C</p>
+      </div>
+
+      <div class="bg-white rounded-xl p-6 card-shadow transform hover:scale-[1.02] transition-transform">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-600">湿度</h3>
+          <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-success">正常</span>
+        </div>
+        <div class="flex items-end justify-between">
+          <div>
+            <p id="humidity" class="text-3xl font-bold">60.0</p>
+            <p class="text-sm text-gray-500">%</p>
+          </div>
+          <div class="w-24 h-2">
+            <div class="h-full bg-gray-200 rounded-full overflow-hidden">
+              <div class="h-full bg-success" style="width: 60%"></div>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-3">正常范围: 40-80%</p>
+      </div>
+
+      <div class="bg-white rounded-xl p-6 card-shadow transform hover:scale-[1.02] transition-transform">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-600">土壤湿度</h3>
+          <span class="text-xs px-2 py-1 rounded-full bg-yellow-100 text-warning">偏低</span>
+        </div>
+        <div class="flex items-end justify-between">
+          <div>
+            <p id="soil-moisture" class="text-3xl font-bold">45.0</p>
+            <p class="text-sm text-gray-500">%</p>
+          </div>
+          <div class="w-24 h-2">
+            <div class="h-full bg-gray-200 rounded-full overflow-hidden">
+              <div class="h-full bg-warning" style="width: 45%"></div>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-3">正常范围: 60-80%</p>
+      </div>
+
+      <div class="bg-white rounded-xl p-6 card-shadow transform hover:scale-[1.02] transition-transform">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-600">光照强度</h3>
+          <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-success">充足</span>
+        </div>
+        <div class="flex items-end justify-between">
+          <div>
+            <p id="light-intensity" class="text-3xl font-bold">1500</p>
+            <p class="text-sm text-gray-500">Lux</p>
+          </div>
+          <div class="w-24 h-2">
+            <div class="h-full bg-gray-200 rounded-full overflow-hidden">
+              <div class="h-full bg-success" style="width: 75%"></div>
+            </div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-3">正常范围: 1000-2000Lux</p>
+      </div>
+    </div>
+
+    <!-- 图表区域 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <h3 class="text-lg font-semibold mb-4">温湿度趋势</h3>
+        <div class="h-80">
+          <canvas id="tempHumidityChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl p-6 card-shadow">
+        <h3 class="text-lg font-semibold mb-4">土壤湿度与光照强度</h3>
+        <div class="h-80">
+          <canvas id="soilLightChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 设备控制区域 -->
+    <div class="bg-white rounded-xl p-6 card-shadow mb-8">
+      <h3 class="text-lg font-semibold mb-6">设备控制</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="border border-gray-200 rounded-lg p-5">
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="font-medium">水泵控制</h4>
+            <div class="relative inline-block w-14 align-middle select-none">
+              <input type="checkbox" id="pump-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer transition-transform duration-200 ease-in transform translate-x-0 checked:translate-x-8 checked:border-primary" checked>
+              <label for="pump-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer checked:bg-primary"></label>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <button id="water-now" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+              <i class="fa fa-tint mr-1"></i> 立即浇水
+            </button>
+            <div class="flex-1">
+              <label for="water-duration" class="block text-sm text-gray-600 mb-1">浇水时长 (秒)</label>
+              <input type="range" id="water-duration" min="5" max="60" value="15" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary">
+              <div class="flex justify-between text-xs text-gray-500 mt-1">
+                <span>5s</span>
+                <span id="duration-value">15s</span>
+                <span>60s</span>
+              </div>
+            </div>
+          </div>
+          <p id="pump-status" class="mt-3 text-sm text-success">当前状态: <span class="font-medium">开启</span></p>
+        </div>
+
+        <div class="border border-gray-200 rounded-lg p-5">
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="font-medium">风扇控制</h4>
+            <div class="relative inline-block w-14 align-middle select-none">
+              <input type="checkbox" id="fan-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-gray-300 appearance-none cursor-pointer transition-transform duration-200 ease-in transform translate-x-0 checked:translate-x-8 checked:border-primary">
+              <label for="fan-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer checked:bg-primary"></label>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <button id="fan-on" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+              <i class="fa fa-refresh mr-1"></i> 立即开启
+            </button>
+            <div class="flex-1">
+              <label for="fan-speed" class="block text-sm text-gray-600 mb-1">风速调节</label>
+              <input type="range" id="fan-speed" min="1" max="3" value="2" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary">
+              <div class="flex justify-between text-xs text-gray-500 mt-1">
+                <span>低速</span>
+                <span id="speed-value">中速</span>
+                <span>高速</span>
+              </div>
+            </div>
+          </div>
+          <p id="fan-status" class="mt-3 text-sm text-gray-500">当前状态: <span class="font-medium">关闭</span></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作日志 -->
+    <div class="bg-white rounded-xl p-6 card-shadow">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">操作日志</h3>
+        <div class="text-sm text-gray-500">
+          显示 <span id="log-count">5</span> 条，共 <span>25</span> 条
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时间</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作类型</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">详情</th>
+            </tr>
+          </thead>
+          <tbody id="logs-table" class="bg-white divide-y divide-gray-200">
+            <!-- 日志内容将通过JavaScript动态添加 -->
+          </tbody>
+        </table>
+      </div>
+      <div class="flex justify-between items-center mt-4">
+        <button class="text-sm text-primary hover:text-primary/80 transition-colors">
+          <i class="fa fa-download mr-1"></i> 导出日志
+        </button>
+        <div class="flex space-x-1">
+          <button class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50">上一页</button>
+          <button class="px-3 py-1 text-sm rounded bg-primary text-white">1</button>
+          <button class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50">2</button>
+          <button class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50">3</button>
+          <button class="px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50">下一页</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-white border-t border-gray-200 mt-12">
+    <div class="container mx-auto px-4 py-6">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <p class="text-sm text-gray-500">© 2025 智慧种植监控系统. 保留所有权利.</p>
+        </div>
+        <div class="flex space-x-6">
+          <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+            <i class="fa fa-question-circle mr-1"></i> 帮助中心
+          </a>
+          <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+            <i class="fa fa-file-text-o mr-1"></i> 文档
+          </a>
+          <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+            <i class="fa fa-envelope mr-1"></i> 联系我们
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // 全局变量存储图表实例
+    let tempHumidityChart, soilLightChart;
+    
+    // 初始化图表
+    function initCharts() {
+      // 温湿度图表
+      const tempHumidityCtx = document.getElementById('tempHumidityChart').getContext('2d');
+      tempHumidityChart = new Chart(tempHumidityCtx, {
+        type: 'line',
+        data: {
+          labels: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
+          datasets: [
+            {
+              label: '温度 (°C)',
+              data: [22.1, 21.5, 20.8, 23.2, 25.8, 26.5, 25.9, 24.5],
+              borderColor: '#165DFF',
+              backgroundColor: 'rgba(22, 93, 255, 0.1)',
+              tension: 0.3,
+              fill: false
+            },
+            {
+              label: '湿度 (%)',
+              data: [65, 68, 70, 62, 58, 55, 57, 60],
+              borderColor: '#00B42A',
+              backgroundColor: 'rgba(0, 180, 42, 0.1)',
+              tension: 0.3,
+              fill: false,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+            }
+          },
+          scales: {
+            y: {
+              min: 15,
+              max: 35,
+              title: {
+                display: true,
+                text: '温度 (°C)'
+              }
+            },
+            y1: {
+              min: 40,
+              max: 80,
+              position: 'right',
+              grid: {
+                drawOnChartArea: false
+              },
+              title: {
+                display: true,
+                text: '湿度 (%)'
+              }
+            }
+          }
+        }
+      });
+      
+      // 土壤湿度与光照图表
+      const soilLightCtx = document.getElementById('soilLightChart').getContext('2d');
+      soilLightChart = new Chart(soilLightCtx, {
+        type: 'line',
+        data: {
+          labels: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
+          datasets: [
+            {
+              label: '土壤湿度 (%)',
+              data: [70, 68, 67, 65, 63, 61, 59, 57],
+              borderColor: '#FF7D00',
+              backgroundColor: 'rgba(255, 125, 0, 0.1)',
+              tension: 0.3,
+              fill: false
+            },
+            {
+              label: '光照强度 (Lux)',
+              data: [0, 0, 500, 1200, 1800, 1900, 1700, 500],
+              borderColor: '#FFC107',
+              backgroundColor: 'rgba(255, 193, 7, 0.1)',
+              tension: 0.3,
+              fill: false,
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+            }
+          },
+          scales: {
+            y: {
+              min: 40,
+              max: 80,
+              title: {
+                display: true,
+                text: '土壤湿度 (%)'
+              }
+            },
+            y1: {
+              min: 0,
+              max: 2500,
+              position: 'right',
+              grid: {
+                drawOnChartArea: false
+              },
+              title: {
+                display: true,
+                text: '光照强度 (Lux)'
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // 更新图表数据
+    function updateCharts(temperature, humidity, soilMoisture, lightIntensity) {
+      // 模拟时间戳
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      
+      // 更新温湿度图表
+      if (tempHumidityChart) {
+        tempHumidityChart.data.labels.push(timeStr);
+        tempHumidityChart.data.datasets[0].data.push(parseFloat(temperature));
+        tempHumidityChart.data.datasets[1].data.push(parseFloat(humidity));
+        
+        if (tempHumidityChart.data.labels.length > 8) {
+          tempHumidityChart.data.labels.shift();
+          tempHumidityChart.data.datasets[0].data.shift();
+          tempHumidityChart.data.datasets[1].data.shift();
+        }
+        
+        tempHumidityChart.update();
+      }
+      
+      // 更新土壤湿度与光照图表
+      if (soilLightChart) {
+        soilLightChart.data.labels.push(timeStr);
+        soilLightChart.data.datasets[0].data.push(parseFloat(soilMoisture));
+        soilLightChart.data.datasets[1].data.push(parseInt(lightIntensity));
+        
+        if (soilLightChart.data.labels.length > 8) {
+          soilLightChart.data.labels.shift();
+          soilLightChart.data.datasets[0].data.shift();
+          soilLightChart.data.datasets[1].data.shift();
+        }
+        
+        soilLightChart.update();
+      }
+    }
+    
+    // 添加日志条目
+    function addLogEntry(type, status, details) {
+      const now = new Date();
+      const timeStr = now.toLocaleString();
+      
+      const logsTable = document.getElementById('logs-table');
+      const newRow = document.createElement('tr');
+      newRow.className = 'hover:bg-gray-50 transition-colors';
+      
+      const statusClass = status === '成功' ? 'text-success' : 'text-danger';
+      const statusIcon = status === '成功' ? 'fa-check-circle' : 'fa-times-circle';
+      
+      newRow.innerHTML = `
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${timeStr}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${type}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="text-sm ${statusClass}">
+            <i class="fa ${statusIcon} mr-1"></i>${status}
+          </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${details}</td>
+      `;
+      
+      // 添加到表格顶部
+      if (logsTable.firstChild) {
+        logsTable.insertBefore(newRow, logsTable.firstChild);
+      } else {
+        logsTable.appendChild(newRow);
+      }
+      
+      // 限制显示数量
+      const maxLogs = 5;
+      if (logsTable.children.length > maxLogs) {
+        logsTable.removeChild(logsTable.lastChild);
+      }
+      
+      // 更新日志计数
+      document.getElementById('log-count').textContent = logsTable.children.length;
+    }
+    
+    // 模拟发送设备控制命令
+    function sendDeviceCommand(device, status) {
+      console.log(`发送命令: ${device} = ${status}`);
+      
+      // 在实际应用中，这里应该发送HTTP请求到后端API
+      // 例如: fetch('/api/device/control', { method: 'POST', body: JSON.stringify({ device, status }) })
+      
+      // 添加日志
+      addLogEntry(`设备控制`, `成功`, `${device}状态: ${status ? '关闭 → 开启' : '开启 → 关闭'}`);
+    }
+    
+    // 获取设备数据
+    async function getDeviceData() {
+      try {
+        const response = await fetch('/receive_data');
+        const data = await response.json();
+        
+        // 更新数据显示
+        document.getElementById('temperature').textContent = data.temperature.toFixed(1);
+        document.getElementById('humidity').textContent = data.humidity.toFixed(1);
+        document.getElementById('soil-moisture').textContent = data.soil_moisture.toFixed(1);
+        document.getElementById('light-intensity').textContent = data.light_intensity;
+        
+        // 更新状态标签
+        updateStatusLabels(data);
+        
+        // 更新图表
+        updateCharts(
+          data.temperature, 
+          data.humidity, 
+          data.soil_moisture, 
+          data.light_intensity
+        );
+        
+        // 添加数据更新日志
+        addLogEntry(`数据更新`, `成功`, `温度: ${data.temperature}°C, 湿度: ${data.humidity}%, 土壤湿度: ${data.soil_moisture}%, 光照强度: ${data.light_intensity}Lux`);
+        
+      } catch (error) {
+        console.error('获取设备数据失败:', error);
+        addLogEntry(`数据更新`, `失败`, `错误: ${error.message}`);
+      }
+    }
+    
+    // 更新状态标签
+    function updateStatusLabels(data) {
+      const statusLabels = {
+        temperature: document.querySelector('#temperature').closest('.card-shadow').querySelector('span'),
+        humidity: document.querySelector('#humidity').closest('.card-shadow').querySelector('span'),
+        'soil-moisture': document.querySelector('#soil-moisture').closest('.card-shadow').querySelector('span'),
+        'light-intensity': document.querySelector('#light-intensity').closest('.card-shadow').querySelector('span')
+      };
+      
+      const ranges = {
+        temperature: { min: 18, max: 30, normal: '正常' },
+        humidity: { min: 40, max: 80, normal: '正常' },
+        'soil-moisture': { min: 60, max: 80, normal: '正常', low: '偏低' },
+        'light-intensity': { min: 1000, max: 2000, normal: '充足', low: '不足' }
+      };
+      
+      for (const [key, value] of Object.entries(data)) {
+        if (statusLabels[key]) {
+          const range = ranges[key];
+          let status, className;
+          
+          if (value < range.min) {
+            status = range.low || '偏低';
+            className = 'bg-yellow-100 text-warning';
+          } else if (value > range.max) {
+            status = range.high || '偏高';
+            className = 'bg-red-100 text-danger';
+          } else {
+            status = range.normal;
+            className = 'bg-green-100 text-success';
+          }
+          
+          statusLabels[key].className = `text-xs px-2 py-1 rounded-full ${className}`;
+          statusLabels[key].textContent = status;
+          
+          // 更新进度条
+          const progressBar = statusLabels[key].closest('.card-shadow').querySelector('.bg-gray-200 .h-full');
+          if (progressBar) {
+            const percent = ((value - range.min) / (range.max - range.min)) * 100;
+            progressBar.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+          }
+        }
+      }
+    }
+    
+    // 初始化设备控制事件
+    function initDeviceControls() {
+      // 水泵控制
+      const pumpToggle = document.getElementById('pump-toggle');
+      const pumpStatus = document.getElementById('pump-status');
+      const waterNow = document.getElementById('water-now');
+      const waterDuration = document.getElementById('water-duration');
+      const durationValue = document.getElementById('duration-value');
+      
+      pumpToggle.addEventListener('change', function() {
+        sendDeviceCommand('水泵', this.checked);
+        pumpStatus.innerHTML = `当前状态: <span class="font-medium ${this.checked ? 'text-success' : 'text-gray-500'}">${this.checked ? '开启' : '关闭'}</span>`;
+      });
+      
+      waterNow.addEventListener('click', function() {
+        const duration = waterDuration.value;
+        sendDeviceCommand('水泵', true);
+        pumpStatus.innerHTML = `当前状态: <span class="font-medium text-success">开启 (${duration}秒)</span>`;
+        
+        // 模拟浇水持续时间
+        setTimeout(() => {
+          if (!pumpToggle.checked) {
+            pumpStatus.innerHTML = `当前状态: <span class="font-medium text-gray-500">关闭</span>`;
+          }
+        }, duration * 1000);
+      });
+      
+      waterDuration.addEventListener('input', function() {
+        durationValue.textContent = `${this.value}s`;
+      });
+      
+      // 风扇控制
+      const fanToggle = document.getElementById('fan-toggle');
+      const fanStatus = document.getElementById('fan-status');
+      const fanOn = document.getElementById('fan-on');
+      const fanSpeed = document.getElementById('fan-speed');
+      const speedValue = document.getElementById('speed-value');
+      
+      const speedLabels = ['低速', '中速', '高速'];
+      
+      fanToggle.addEventListener('change', function() {
+        sendDeviceCommand('风扇', this.checked);
+        fanStatus.innerHTML = `当前状态: <span class="font-medium ${this.checked ? 'text-success' : 'text-gray-500'}">${this.checked ? speedLabels[fanSpeed.value - 1] : '关闭'}</span>`;
+      });
+      
+      fanOn.addEventListener('click', function() {
+        fanToggle.checked = true;
+        sendDeviceCommand('风扇', true);
+        fanStatus.innerHTML = `当前状态: <span class="font-medium text-success">${speedLabels[fanSpeed.value - 1]}</span>`;
+      });
+      
+      fanSpeed.addEventListener('input', function() {
+        speedValue.textContent = speedLabels[this.value - 1];
+        if (fanToggle.checked) {
+          fanStatus.innerHTML = `当前状态: <span class="font-medium text-success">${speedLabels[this.value - 1]}</span>`;
+        }
+      });
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      initCharts();
+      initDeviceControls();
+      
+      // 初始获取一次数据
+      getDeviceData();
+      
+      // 定时刷新数据
+      setInterval(getDeviceData, 5000);
+    });
+  </script>
+</body>
+</html>    
